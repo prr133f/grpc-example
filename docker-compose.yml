@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: grpc-todo
+    build: ./
+    ports:
+      - 50051:50051
+    restart: on-failure
+    depends_on:
+      - db
+    networks:
+      - todo
+    links:
+      - db
+
+  db:
+    image: postgres:latest
+    container_name: db_postgres
+    environment:
+      - POSTGRES_USER=prr133f
+      - POSTGRES_PASSWORD=123arra321
+      - POSTGRES_DB=todo
+      - DATABASE_HOST=db
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+      - ./sql/tasks.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - todo
+
+volumes:
+  database_postgres:
+
+networks:
+  todo:
+    driver: bridge

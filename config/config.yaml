@@ -1,0 +1,5 @@
+app:
+  port: 50051
+  log_level: debug
+postgres:
+  dsn: "postgres://prr133f:123arra321@db:5432/todo"
