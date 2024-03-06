@@ -19,12 +19,10 @@ func main() {
 	conf := config.ParseConfig()
 	logger := utils.InitLogger()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("%d", conf.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", conf.Port))
 	if err != nil {
 		log.Error().Err(err)
 	}
-
-	logger.Debug().Msg("TEST FROM MAIN")
 
 	s := grpc.NewServer()
 	pgInstance, err := database.NewPG(context.Background(), conf.DSN)

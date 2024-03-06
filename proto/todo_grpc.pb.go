@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TodoClient interface {
 	CreateTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*TaskId, error)
-	ResolveTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ResolveTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Ok, error)
 	GetTaskList(ctx context.Context, in *None, opts ...grpc.CallOption) (Todo_GetTaskListClient, error)
 }
 
@@ -45,8 +44,8 @@ func (c *todoClient) CreateTask(ctx context.Context, in *Task, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *todoClient) ResolveTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *todoClient) ResolveTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Ok, error) {
+	out := new(Ok)
 	err := c.cc.Invoke(ctx, "/todo.Todo/ResolveTask", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -91,7 +90,7 @@ func (x *todoGetTaskListClient) Recv() (*Task, error) {
 // for forward compatibility
 type TodoServer interface {
 	CreateTask(context.Context, *Task) (*TaskId, error)
-	ResolveTask(context.Context, *TaskId) (*emptypb.Empty, error)
+	ResolveTask(context.Context, *TaskId) (*Ok, error)
 	GetTaskList(*None, Todo_GetTaskListServer) error
 	mustEmbedUnimplementedTodoServer()
 }
@@ -103,7 +102,7 @@ type UnimplementedTodoServer struct {
 func (UnimplementedTodoServer) CreateTask(context.Context, *Task) (*TaskId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTask not implemented")
 }
-func (UnimplementedTodoServer) ResolveTask(context.Context, *TaskId) (*emptypb.Empty, error) {
+func (UnimplementedTodoServer) ResolveTask(context.Context, *TaskId) (*Ok, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResolveTask not implemented")
 }
 func (UnimplementedTodoServer) GetTaskList(*None, Todo_GetTaskListServer) error {

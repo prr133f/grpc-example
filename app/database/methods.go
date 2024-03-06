@@ -21,11 +21,11 @@ func (p *Postgres) CreateTask(title, description string) (uuid.UUID, error) {
 }
 
 func (p *Postgres) ResolveTask(id uuid.UUID) error {
-	if err := p.DB.QueryRow(context.Background(), `
-	UPDATE task_schema 
+	if _, err := p.DB.Exec(context.Background(), `
+	UPDATE task_schema.task 
 	SET resolved = true
 	WHERE id = $1
-	`, id).Scan(); err != nil {
+	`, id); err != nil {
 		return err
 	}
 
@@ -36,7 +36,7 @@ func (p *Postgres) GetTaskList() ([]models.Task, error) {
 	var tasks []models.Task
 
 	rows, err := p.DB.Query(context.Background(), `
-	SELECT id, title, description. resolved
+	SELECT id, title, description, resolved
 	FROM task_schema.task`)
 	if err != nil {
 		return nil, err

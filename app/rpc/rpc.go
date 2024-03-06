@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Server struct {
@@ -26,7 +25,7 @@ func (s *Server) CreateTask(ctx context.Context, in *pb.Task) (*pb.TaskId, error
 	return &pb.TaskId{Id: id.String()}, nil
 }
 
-func (s *Server) ResolveTask(ctx context.Context, in *pb.TaskId) (*emptypb.Empty, error) {
+func (s *Server) ResolveTask(ctx context.Context, in *pb.TaskId) (*pb.Ok, error) {
 	id, err := uuid.Parse(in.GetId())
 	if err != nil {
 		s.Log.Error().Err(err).Stack()
@@ -38,7 +37,7 @@ func (s *Server) ResolveTask(ctx context.Context, in *pb.TaskId) (*emptypb.Empty
 		return nil, err
 	}
 
-	return &emptypb.Empty{}, nil
+	return &pb.Ok{Ok: true}, nil
 }
 
 func (s *Server) GetTaskList(in *pb.None, stream pb.Todo_GetTaskListServer) error {

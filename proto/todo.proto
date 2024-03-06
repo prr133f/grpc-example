@@ -2,13 +2,11 @@ syntax = "proto3";
 
 option go_package = "example.com/grpc-todo/todo";
 
-import "google/protobuf/empty.proto";
-
 package todo;
 
 service Todo {
     rpc CreateTask(Task) returns (TaskId) {}
-    rpc ResolveTask(TaskId) returns (google.protobuf.Empty) {}
+    rpc ResolveTask(TaskId) returns (Ok) {}
     rpc GetTaskList(None) returns (stream Task) {}
 }
 
@@ -23,4 +21,8 @@ message Task {
 
 message TaskId {
     string id = 1;
+}
+
+message Ok {
+    bool ok = 1;
 }
