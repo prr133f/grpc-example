@@ -11,8 +11,6 @@ services:
       - db
     networks:
       - todo
-    links:
-      - db
 
   db:
     image: postgres:latest

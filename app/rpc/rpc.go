@@ -60,3 +60,41 @@ func (s *Server) GetTaskList(in *pb.None, stream pb.Todo_GetTaskListServer) erro
 
 	return nil
 }
+
+func (s *Server) GetTaskById(ctx context.Context, in *pb.TaskId) (*pb.Task, error) {
+	taskId, err := uuid.Parse(in.GetId())
+	if err != nil {
+		s.Log.Error().Err(err).Stack()
+		return nil, err
+	}
+
+	task, err := s.PG.GetTaskById(taskId)
+	if err != nil {
+		s.Log.Error().Err(err).Stack()
+		return nil, err
+	}
+
+	return &pb.Task{
+		Id:          task.ID.String(),
+		Title:       task.Title,
+		Description: task.Description,
+		Resolved:    task.Resolved,
+	}, nil
+}
+
+func (s *Server) DeleteTask(ctx context.Context, in *pb.TaskId) (*pb.Ok, error) {
+	taskId, err := uuid.Parse(in.GetId())
+	if err != nil {
+		s.Log.Error().Err(err).Stack()
+		return nil, err
+	}
+
+	if err := s.PG.DeleteTask(taskId); err != nil {
+		s.Log.Error().Err(err).Stack()
+		return nil, err
+	}
+
+	return &pb.Ok{
+		Ok: true,
+	}, nil
+}

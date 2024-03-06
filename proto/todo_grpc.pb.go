@@ -25,6 +25,8 @@ type TodoClient interface {
 	CreateTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*TaskId, error)
 	ResolveTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Ok, error)
 	GetTaskList(ctx context.Context, in *None, opts ...grpc.CallOption) (Todo_GetTaskListClient, error)
+	GetTaskById(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Task, error)
+	DeleteTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Ok, error)
 }
 
 type todoClient struct {
@@ -85,6 +87,24 @@ func (x *todoGetTaskListClient) Recv() (*Task, error) {
 	return m, nil
 }
 
+func (c *todoClient) GetTaskById(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Task, error) {
+	out := new(Task)
+	err := c.cc.Invoke(ctx, "/todo.Todo/GetTaskById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *todoClient) DeleteTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Ok, error) {
+	out := new(Ok)
+	err := c.cc.Invoke(ctx, "/todo.Todo/DeleteTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TodoServer is the server API for Todo service.
 // All implementations must embed UnimplementedTodoServer
 // for forward compatibility
@@ -92,6 +112,8 @@ type TodoServer interface {
 	CreateTask(context.Context, *Task) (*TaskId, error)
 	ResolveTask(context.Context, *TaskId) (*Ok, error)
 	GetTaskList(*None, Todo_GetTaskListServer) error
+	GetTaskById(context.Context, *TaskId) (*Task, error)
+	DeleteTask(context.Context, *TaskId) (*Ok, error)
 	mustEmbedUnimplementedTodoServer()
 }
 
@@ -107,6 +129,12 @@ func (UnimplementedTodoServer) ResolveTask(context.Context, *TaskId) (*Ok, error
 }
 func (UnimplementedTodoServer) GetTaskList(*None, Todo_GetTaskListServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetTaskList not implemented")
+}
+func (UnimplementedTodoServer) GetTaskById(context.Context, *TaskId) (*Task, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTaskById not implemented")
+}
+func (UnimplementedTodoServer) DeleteTask(context.Context, *TaskId) (*Ok, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
 }
 func (UnimplementedTodoServer) mustEmbedUnimplementedTodoServer() {}
 
@@ -178,6 +206,42 @@ func (x *todoGetTaskListServer) Send(m *Task) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Todo_GetTaskById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TaskId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServer).GetTaskById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/todo.Todo/GetTaskById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServer).GetTaskById(ctx, req.(*TaskId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Todo_DeleteTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TaskId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServer).DeleteTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/todo.Todo/DeleteTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServer).DeleteTask(ctx, req.(*TaskId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Todo_ServiceDesc is the grpc.ServiceDesc for Todo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -192,6 +256,14 @@ var Todo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResolveTask",
 			Handler:    _Todo_ResolveTask_Handler,
+		},
+		{
+			MethodName: "GetTaskById",
+			Handler:    _Todo_GetTaskById_Handler,
+		},
+		{
+			MethodName: "DeleteTask",
+			Handler:    _Todo_DeleteTask_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

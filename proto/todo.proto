@@ -8,6 +8,8 @@ service Todo {
     rpc CreateTask(Task) returns (TaskId) {}
     rpc ResolveTask(TaskId) returns (Ok) {}
     rpc GetTaskList(None) returns (stream Task) {}
+    rpc GetTaskById(TaskId) returns (Task) {}
+    rpc DeleteTask(TaskId) returns (Ok) {}
 }
 
 message None {}
