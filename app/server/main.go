@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"todo/app/database"
 	"todo/app/rpc"
-	"todo/config"
 	"todo/utils"
 
 	pb "todo/proto"
@@ -16,16 +16,15 @@ import (
 )
 
 func main() {
-	conf := config.ParseConfig()
 	logger := utils.InitLogger()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", conf.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
 	if err != nil {
 		log.Error().Err(err)
 	}
 
 	s := grpc.NewServer()
-	pgInstance, err := database.NewPG(context.Background(), conf.DSN)
+	pgInstance, err := database.NewPG(context.Background(), os.Getenv("POSTGRES_DSN"))
 	if err != nil {
 		log.Error().Err(err)
 	}
