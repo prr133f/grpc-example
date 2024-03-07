@@ -2,18 +2,10 @@ package rpc
 
 import (
 	"context"
-	"todo/app/database"
 	pb "todo/proto"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
-
-type Server struct {
-	pb.UnimplementedTodoServer
-	PG  database.Postgres
-	Log *zerolog.Logger
-}
 
 func (s *Server) CreateTask(ctx context.Context, in *pb.Task) (*pb.TaskId, error) {
 	id, err := s.PG.CreateTask(in.GetTitle(), in.GetDescription())

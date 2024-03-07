@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/pkg/errors"
 )
 
 func (p *Postgres) CreateTask(title, description string) (uuid.UUID, error) {
@@ -15,7 +16,8 @@ func (p *Postgres) CreateTask(title, description string) (uuid.UUID, error) {
 	VALUES($1, $2)
 	RETURNING id
 	`, title, description).Scan(&id); err != nil {
-		return uuid.Nil, err
+		p.Log.Error().Err(err).Stack()
+		return uuid.Nil, errors.WithStack(err)
 	}
 
 	return id, nil
@@ -29,29 +31,26 @@ func (p *Postgres) ResolveTask(id uuid.UUID) error {
 	ON CONFLICT
 	DO NOTHING
 	`, id); err != nil {
-		return err
+		p.Log.Error().Err(err).Stack()
+		return errors.WithStack(err)
 	}
 
 	return nil
 }
 
 func (p *Postgres) GetTaskList() ([]models.Task, error) {
-	var tasks []models.Task
-
 	rows, err := p.DB.Query(context.Background(), `
 	SELECT id, title, description, resolved
 	FROM task_schema.task`)
 	if err != nil {
-		return nil, err
+		p.Log.Error().Err(err).Stack()
+		return nil, errors.WithStack(err)
 	}
 
-	for rows.Next() {
-		task, err := pgx.RowToStructByName[models.Task](rows)
-		if err != nil {
-			return nil, err
-		}
-
-		tasks = append(tasks, task)
+	tasks, err := pgx.CollectRows[models.Task](rows, pgx.RowToStructByName[models.Task])
+	if err != nil {
+		p.Log.Error().Err(err).Stack()
+		return nil, errors.WithStack(err)
 	}
 
 	return tasks, nil
@@ -60,14 +59,17 @@ func (p *Postgres) GetTaskList() ([]models.Task, error) {
 func (p *Postgres) GetTaskById(id uuid.UUID) (models.Task, error) {
 	row, err := p.DB.Query(context.Background(), `
 	SELECT id, title, description, resolved
-	FROM task_schema.task`)
+	FROM task_schema.task
+	WHERE id=$1`, id)
 	if err != nil {
-		return models.Task{}, err
+		p.Log.Error().Err(err).Stack()
+		return models.Task{}, errors.WithStack(err)
 	}
 
-	task, err := pgx.RowToStructByName[models.Task](row)
+	task, err := pgx.CollectOneRow[models.Task](row, pgx.RowToStructByName[models.Task])
 	if err != nil {
-		return models.Task{}, err
+		p.Log.Error().Err(err).Stack()
+		return models.Task{}, errors.WithStack(err)
 	}
 
 	return task, nil
@@ -77,7 +79,8 @@ func (p *Postgres) DeleteTask(id uuid.UUID) error {
 	if _, err := p.DB.Exec(context.Background(), `
 	DELETE FROM task_schema.task
 	WHERE id=$1`, id); err != nil {
-		return err
+		p.Log.Error().Err(err).Stack()
+		return errors.WithStack(err)
 	}
 
 	return nil

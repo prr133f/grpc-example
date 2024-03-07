@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Error().Err(err)
 	}
-	pb.RegisterTodoServer(s, &rpc.Server{PG: *pgInstance, Log: &logger})
+	pb.RegisterTodoServer(s, &rpc.Server{PG: pgInstance, Log: &logger})
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatal().Err(err)

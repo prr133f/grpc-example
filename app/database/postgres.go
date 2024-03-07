@@ -4,12 +4,25 @@ import (
 	"context"
 	"sync"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+type PgxIface interface {
+	Begin(context.Context) (pgx.Tx, error)
+	Close()
+	Ping(context.Context) error
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	Exec(context context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+}
+
 type Postgres struct {
-	DB *pgxpool.Pool
+	DB  PgxIface
+	Log *zerolog.Logger
 }
 
 var (

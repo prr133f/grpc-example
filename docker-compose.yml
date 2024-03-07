@@ -14,7 +14,7 @@ services:
 
   db:
     image: postgres:latest
-    container_name: db_postgres
+    container_name: db-postgres
     environment:
       - POSTGRES_USER=prr133f
       - POSTGRES_PASSWORD=123arra321
